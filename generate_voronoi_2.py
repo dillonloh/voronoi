@@ -2,8 +2,9 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 import matplotlib.path as mpltPath
+import pickle
 
-from shapely import Polygon, MultiPolygon, Point
+
 from scipy.spatial import Voronoi, voronoi_plot_2d
 
 image_path = './maps/TRUSCO3F_3_cleaned.png'
@@ -36,7 +37,6 @@ lower_threshold = 0
 top_threshold = 10
 ret, thresh = cv2.threshold(img_gray, top_threshold, 255, cv2.THRESH_BINARY)
 
-thresh = cv2.resize(thresh, dim, interpolation=cv2.INTER_AREA)
 
 # cv2.imshow("Polygon", thresh)
 # cv2.waitKey(0)
@@ -44,10 +44,10 @@ thresh = cv2.resize(thresh, dim, interpolation=cv2.INTER_AREA)
 
 Y, X = np.where(thresh == 0)
 points = np.array([X, Y]).T
-
+print(points)
 vor = Voronoi(points)
 polygon_matrix = thresh == 0
-
+print(polygon_matrix.shape)
 # print(polygon_matrix[int(vor.vertices[128][1])][int(vor.vertices[128][0])])
 print(polygon_matrix.shape)
 print(thresh.shape)
@@ -78,13 +78,44 @@ for ridge in finite_ridges:
     except:
         pass
 
+
+filtered_vertices = []
+nogood_vertices = []
+fucked_vertices = []
+
+for vertex in vor.vertices:
+    x = vertex[0]
+    y = vertex[1]
+    # print(vertex)
+
+    try:
+        if (polygon_matrix[int(y)][int(x)] == False):
+            filtered_vertices.append(vertex)
+        else:
+            nogood_vertices.append(vertex)
+    except Exception as e:
+        # print(e)
+        fucked_vertices.append(vertex)
+
+
+# filtering vertices and edges
+# vor.vertices = np.array(filtered_vertices)
+z = np.array(filtered_vertices)
 vor.ridge_vertices = np.array(filtered_ridges)
 
 
+with open('voronoi.pkl', 'wb') as f:
+    pickle.dump(vor, f, pickle.HIGHEST_PROTOCOL)
+    print('pickled')
+
+with open('filtered_vertices.pkl', 'wb') as f:
+    pickle.dump(z, f, pickle.HIGHEST_PROTOCOL)
+    print('pickled 2')
+
 print('plotting...')
 
-fig = voronoi_plot_2d(vor, line_width=0.5, point_size=0.4, show_vertices=False)
-
+# fig = voronoi_plot_2d(vor, line_width=0.5, point_size=0.4, show_vertices=False)
+# plt.scatter(z[:, 0], z[:, 1], s=0.2)
 
 plt.imshow(img_original)
 plt.show()
