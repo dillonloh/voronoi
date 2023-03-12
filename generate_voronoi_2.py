@@ -8,12 +8,13 @@ import pickle
 from scipy.spatial import Voronoi, voronoi_plot_2d
 
 image_path = './maps/TRUSCO3F_3_cleaned.png'
-outside_path = './maps/TRUSCO3F_3_obstacles.png'
 path = './maps/TRUSCO3F_3_inverse.png'
 img_original = cv2.imread(image_path)
 img = cv2.imread(path)
 
+
 scale_percent = 25 # percent of original size
+
 width = int(img_original.shape[1] * scale_percent / 100)
 height = int(img_original.shape[0] * scale_percent / 100)
 dim = (width, height)
@@ -25,7 +26,6 @@ img = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
 hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
 marker = np.array([36, 28, 236]) #BGR equivalent for red
-
 
 mask = cv2.inRange(img, marker, marker)
 imask = mask>0
@@ -114,12 +114,8 @@ with open('filtered_vertices.pkl', 'wb') as f:
 
 print('plotting...')
 
-# fig = voronoi_plot_2d(vor, line_width=0.5, point_size=0.4, show_vertices=False)
-# plt.scatter(z[:, 0], z[:, 1], s=0.2)
+fig = voronoi_plot_2d(vor, line_width=0.5, point_size=0.4, show_vertices=False)
+plt.scatter(z[:, 0], z[:, 1], s=0.2)
 
 plt.imshow(img_original)
 plt.show()
-
-
-
-
